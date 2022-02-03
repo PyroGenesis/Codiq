@@ -1,7 +1,6 @@
 # LeetCode imports
 from typing import List
 
-
 class Solution:
     '''
     Skipped:
@@ -16,6 +15,20 @@ class Solution:
                 Since n1 and n2 (where n1 + n2 = target) can't be the same,
                     no need to account for dups
             O(n), O(n)
+            
+        Pointers in sorted list
+            Here, we first sort the original array (while keeping the idx record), then initialize 2 pointers at start and end
+            1. If num[start]+num[end] > target, start++
+            2. If num[start]+num[end] < target, end--
+            3. If num[start]+num[end] == target, nums found
+            This is actually the solution for Two Sum II 
+                (it might not be optimal right away but it can be very useful for followup questions)
+            The reason this works is:
+                If case 1 happens, that start cannot be part of the solution because even with the highest possible value for end
+                    (provided that num[start]+num[end] do not exceed target), num[start] is too low
+                If case 2 happens, that end cannot be part of the solution because even with the smallest possible value for start
+                    (provided that num[start]+num[end] is not less than target), num[end] is too high
+            O(nlogn), O(n)
     '''
     
     '''
