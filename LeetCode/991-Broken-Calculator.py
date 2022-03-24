@@ -37,6 +37,9 @@ class Solution:
             if y < x, next (x - y) operations are add because we are forced to do so    (2)
             if y is odd, next operation is add, then repeat check for next rule         (3)
             if y is even, next operation is div, then repeat check for next rule        (4)
+        
+        Time:  O(log target)
+        Space: O(1)
     '''
     def brokenCalc(self, startValue: int, target: int) -> int:
         operations = 0
