@@ -18,11 +18,13 @@ class Solution:
             So what about pairing y with a?
             
             Some observations:
-            a <= b and y <= z           ...(1) [because of the sort]
-            a + z <= limit              ...(2) [scenario assumption]
-            b + y > limit               ...(3) [scenario assumption]
-            Therefore, b > a            ...(4) [because b is not < a (1) and if b == a then b+y == a+y <= limit (1)y<=z]
-            Therefore, b + z > limit    ...(5) [because if (3) is true then it has to be because of (1)y<=z]
+            a <= b                      ...{1} [because a was paired up before b, it has to lighter or equal]
+            y <= z                      ...{2} [because z was paired up before y, it has to be heavier or equal]
+            a + z <= limit              ...{3} [scenario assumption - (a, z) is a valid pair]
+            b + y > limit               ...{4} [scenario assumption - (b, y) is not a valid pair]
+            Therefore, b > a            ...{5} [b cannot be less than a (contradicts {1}) AND
+                                                b cannot be equal to a (otherwise b+y == a+y <= limit {2}{3}) which contradicts {4}]
+            Therefore, b + z > limit    ...{5} [because of {4} and {2}]
             
             So basically, if a pair cannot be formed with current lightest, no paired up heavy will work with current lightest
               therefore if you break up a previous pair, the previous heavy would have to sit alone in a boat
