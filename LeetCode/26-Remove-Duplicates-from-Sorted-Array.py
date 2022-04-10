@@ -1,3 +1,6 @@
+# Leetcode imports
+from typing import List
+
 class Solution:
     '''
     Optimal solution
