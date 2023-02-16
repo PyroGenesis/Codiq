@@ -1,7 +1,7 @@
 # LeetCode imports
 from typing import List
 # custom datastructure
-from LeetCode.GlobalStructures import DSU
+from LeetCode.CustomStructures import DSU
 
 class Solution:
     def validTree(self, n: int, edges: List[List[int]]) -> bool:
