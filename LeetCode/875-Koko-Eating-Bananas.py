@@ -13,17 +13,39 @@ class Solution:
     '''
     
     '''
-        Binary search
-        Let's say Koko needs to eat bananas at rate x which is min optimal before the guards return
-        There is a limited eating range starting at 1 and ending at max(bananas in a pile)
-        Therefore all rates 1 ... x-1 will be too slow but rates x ... max(bananas in a pile) will be satisfactory
-            out of which x will be the optimal
-        Given a linear searching space, this boundary gives us a good basis to run binary search on Koko's speed
-        Note:   A slow rate must be discarded since its an invalid rate, but a fast one will be kept under consideration,
-                (fast+1 ... will be removed however) because that might be the optimal fast rate
-                
-        Time:  O(nlogm), n -> len(piles), m -> max speed OR range of speed (1 ... max(piles))
-        Space: O(1)
+    Binary Search
+    Simply conduct binary search with calculating hours taken at every mid to arrive at the optimal answer
+
+    Intuition for why this is a binary search problem:
+        1. Clear boundary between invalid and valid answer
+            Eg: piles: [3,6,7,11], h: 8
+                speed       2       3    4      5          6
+                hours      15      10    8      8          6
+                        Invalid invalid Ans Suboptimal Suboptimal
+        2. Proper upper and lower bounds
+            Lower Bound
+                At the slowest pace, Koko will eat at exactly total_bananas / h speed
+                Therefore, min speed = sum(piles) // h (OR ceil(sum(piles) / h))
+            Upper Bound
+                At the fastest pace, Koko will eat every pile in exactly 1 hour
+                Therefore, max speed = max(piles)
+        3. Any answer can help us eliminate the left or right half of search space
+            If speed s is enough to consume all piles within h hours, 
+                speeds s+1 ... upper-bound will all be suboptimal and can be eliminated
+            If speed s is not enough to consume all piles within h hours, 
+                lower-bound ... s will also not be enough and can be eliminated
+
+    Time Complexity: O(n * log(m))
+        Let n -> len(piles)
+        Let m => range of speeds (hi - lo)
+        Get initial lo: O(n)
+        Get initial hi: O(n)
+        Calculating hours taken for particular speed: O(n)
+        Therefore, total time complexity:
+            O(n + n + nlogm)
+            O(n * log(m))
+
+    Space complexity: O(1)
     '''
     def minEatingSpeed(self, piles: List[int], h: int) -> int:
         # sanity checks
@@ -42,31 +64,29 @@ class Solution:
             nonlocal piles
             hours_taken = 0            
             for bananas in piles:
-                hours_taken += math.ceil(bananas / speed)
+                # used 2 statements instead of math.ceil(bananas / speed) 
+                #   to prevent float-precision error from getting round up
+                hours_taken += bananas // speed
+                if bananas % speed > 0:
+                    hours_taken += 1
             return hours_taken
         
+        # Technically, this speed needs to be ceil(total_bananas / h) but 
+        #   the difference between that and total_bananas // h is 1 so it doesn't matter
+        lo = sum(piles) // h
+        hi = max(piles)
+
         # binary search
-        lo, hi = 1, max(piles)
         while lo < hi:
             mid = lo + (hi - lo) // 2
-            hours_taken = calcHoursTaken(mid)
-            if hours_taken > h:
-                # this speed is too slow
-                lo = mid + 1
-            else:
+            if calcHoursTaken(mid) <= h:
                 # this speed is good (possible but might not be optimal)
                 hi = mid
+            else:
+                # this speed is too slow
+                lo = mid + 1
             # The reason we don't return on hours_taken == h is because this is a minimization problem
             # We need mid to try and go lower even if we have a mid which satisfies h
-            # else:
-            #     return mid
         
         # return optimal speed
         return lo
-    
-    '''
-        Skipped (To-Do):
-            A O(nlogn) solution using a priority queue and assigning hours in proportion with pile size
-            Might be more time efficient than binary search but with a greater space complexity O(n)
-            https://leetcode.com/problems/koko-eating-bananas/solution/1226924
-    '''
