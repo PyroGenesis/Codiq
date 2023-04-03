@@ -40,6 +40,12 @@ class Solution:
                 Therefore m + n <= limit and (m, n) is a valid pair
         Since the swap results no extra boat(s), a new optimal solution T is obtained. 
         That indicates our first step (put hi and lo into same boat) is an optimal step and and greedy choice property also holds.
+
+        Optimization:
+        If at any point, the lightest unassigned person > half of limit, we can conclude that all unassigned persons will need their own boat now
+        This is because even if you pair the lightest unassigned person with the second-lightest unassigned person,
+            their weight >= (smallest unassigned person * 2) > (limit * 0.5 * 2)
+                         > limit
     '''
     def numRescueBoats(self, people: List[int], limit: int) -> int:
         return self.numRescueBoatsTwoPointer(people, limit)
@@ -58,6 +64,8 @@ class Solution:
         Inc j at every loop, putting heavyweight in a boat with/without lightweight
         
         We follow the rules putting 1 OR 2 people in a boat at a time, while bringing the pointers closer
+        If the lightest person duplicated cannot fit in the same boat as itself, we quit the loop
+          because every person from now on will require their own boat
         If one person is left in the pool (i==j), we give them their own boat
         
         Time:  O(nlogn) [because of sort]
@@ -74,6 +82,10 @@ class Solution:
         
         # the loop will run while there are at least 2 people to assign a boat to
         while i < j:
+            # early exit condition when every person will need their own boat
+            if people[i] * 2 > limit:
+                break
+            
             # try to pair up the heaviest and lightest unassigned people
             # if they cannot pair up, there can be no person to pair with the heavy
             #   so put them alone in a single boat
@@ -86,7 +98,8 @@ class Solution:
             boats += 1
         
         # if any person is left alone after pairing loop, they get their own boat
-        boats += 1 if i == j else 0        
+        if i <= j:
+            boats += j - i + 1  
         
         return boats
     
