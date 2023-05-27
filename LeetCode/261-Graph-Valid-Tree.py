@@ -1,18 +1,7 @@
 # LeetCode imports
 from typing import List
-
-class DSU:
-    # !! UNOPTIMIZED !!
-    def __init__(self, size):
-        self.parent = list(range(size))
-    
-    def find(self, x):
-        while x != self.parent[x]:
-            x = self.parent[x]
-        return x
-    
-    def union(self, x, y):
-        self.parent[self.find(x)] = self.find(y)
+# custom datastructure
+from LeetCode.CustomStructures import DSU
 
 class Solution:
     def validTree(self, n: int, edges: List[List[int]]) -> bool:
