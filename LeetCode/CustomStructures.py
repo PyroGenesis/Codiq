@@ -1,19 +1,22 @@
 # these are the data structures I defined myself
 
 class DSU:    
-    def __init__(self, size):
+    def __init__(self, size: int) -> None:
         self.parent = list(range(size)) # ith value is the parent node to node i
         self.rank = [1] * size          # max depth of subtree rooted here (used for union by rank)
         
-    def find(self, x):
+    def find(self, x: int) -> int:
         # if the node is not its own parent, we need to recurse on parent
         if x != self.parent[x]:
             # path compression
             self.parent[x] = self.find(self.parent[x])
         return self.parent[x]
     
+    def isConnected(self, x: int, y: int) -> bool:
+        return self.find(x) == self.find(y)
+    
     # returns a boolean whether or not union was needed
-    def union(self, x, y):
+    def union(self, x: int, y: int) -> bool:
         rootX = self.find(x)
         rootY = self.find(y)        
         
@@ -35,9 +38,6 @@ class DSU:
         
         # union complete
         return True
-    
-    def connected(self, x, y):
-        return self.find(x) == self.find(y)
 
 class Trie:    
     class TrieNode:
