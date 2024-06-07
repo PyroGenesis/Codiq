@@ -1,4 +1,4 @@
-# Leetsi
+# Codiq
 
 The objective of this repository is to contain all feasible solutions to programming problems. This includes not just the most optimal solution but also sub-optimal ones that help gain a better understanding or a new perspective on the problem approaches.
 
