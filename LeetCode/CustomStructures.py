@@ -39,7 +39,7 @@ class DSU:
         # union complete
         return True
 
-class Trie:    
+class Trie:
     class TrieNode:
         def __init__(self):
             self.children = {}
@@ -56,10 +56,10 @@ class Trie:
         Inserts a word into the trie.
         """
         node = self.root
-        for c in word:
-            if c not in node.children:
-                node.children[c] = Trie.TrieNode()
-            node = node.children[c]
+        for ch in word:
+            if ch not in node.children:
+                node.children[ch] = Trie.TrieNode()
+            node = node.children[ch]
         node.end = True
 
     def search(self, word: str) -> bool:
@@ -67,10 +67,10 @@ class Trie:
         Returns if the word is in the trie.
         """
         node = self.root
-        for c in word:
-            if c not in node.children:
+        for ch in word:
+            if ch not in node.children:
                 return False
-            node = node.children[c]
+            node = node.children[ch]
         return node.end
         
 
@@ -79,8 +79,8 @@ class Trie:
         Returns if there is any word in the trie that starts with the given prefix.
         """
         node = self.root
-        for c in prefix:
-            if c not in node.children:
+        for ch in prefix:
+            if ch not in node.children:
                 return False
-            node = node.children[c]
+            node = node.children[ch]
         return True
