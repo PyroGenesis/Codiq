@@ -52,11 +52,11 @@ class ProgramState:
         return (self.A, self.B, self.C)[operand - 4]
 
 
-def get_state(filename: str, cls: type):
+def get_state(filename: str):
     data = read_data(filename)
     lines = data.splitlines()
 
-    state = cls()
+    state = ProgramState()
     state.A = int(lines[0][12:])
     state.B = int(lines[1][12:])
     state.C = int(lines[2][12:])
@@ -110,134 +110,39 @@ assert part1(t4)[1].B == 26
 t5 = ProgramState(B=2024, C=43690, program=[4, 0])
 assert part1(t5)[1].B == 44354
 
-sample = part1(get_state("sample.txt", ProgramState))
+sample = part1(get_state("sample.txt"))
 assert sample[0] == "4,6,3,5,6,3,5,2,1,0"
 
-# print(part1(get_state("input.txt"))[0])
-
-from copy import copy
-import math
-import sys
+print("Part 1:", part1(get_state("input.txt"))[0])
 
 
-@dataclass
-class ProgramStateR(ProgramState):
-    A_high: int = 0
-    B_high: int = sys.maxsize
-    C_high: int = sys.maxsize
-
-    def combo_op(self, operand: int) -> list[int]:
-        if operand < 4:
-            return [operand, operand]
-        return ([self.A, self.A_high], [self.B, self.B_high], [self.C, self.C_high])[operand - 4]
-
-
-def reverse_program(program: list[int]):
-    assert program[-2] == 3
-    assert program[-1] == 0
-
-    n = len(program)
-
-    i = 0
-    inss = []
-    while i < n:
-        inss.append((program[i], program[i + 1]))
-        i += 2
-    jmp = inss.pop()
-    flattened_rev_ins = [x for ins in reversed(inss) for x in ins]
-
-    rev = []
-    for _ in range(n):
-        rev.extend(flattened_rev_ins)
-        rev.extend(jmp)
-    return rev
+def part2(state: ProgramState):
+    A = 0
+    for o in reversed(state.program):
+        A <<= 3
+        # x = 1
+        while True:
+            state.A = A
+            state.B = 0
+            state.C = 0
+            state.ip = 0
+            if int(part1(state)[0][0]) == o:
+                if A == 0:
+                    A += 1
+                break
+            A += 1
+    return A
 
 
-def part2(state: ProgramStateR):
-    expected_output = copy(state.program)
+# state = get_state("sample2.txt")
+# for A in range(500):
+#     state.A = A
+#     state.B = 0
+#     state.C = 0
+#     state.ip = 0
+#     print(A, part1(state)[0])
 
-    # reverse program
-    state.A = 0
-    state.B = 0
-    state.C = 0
-    state.program = reverse_program(state.program)
+assert part2(get_state("sample2.txt")) == 117440
+print("Part 2:", part2(get_state("input.txt")))
 
-    while (ins := state.read_instruction()) is not None:
-        opcode, operand = ins
-        if opcode in (0, 6, 7):
-            # reverse adv, bdv, cdv
-            assert operand < 4, "Reverse adv for ranged operand not implemented"
-            rev = None
-            if opcode == 0:
-                rev = [state.A, state.A_high]
-            elif opcode == 6:
-                rev = [state.B, state.B_high]
-            else:
-                rev = [state.C, state.C_high]
-            denominator = 2**operand
-            state.A = rev[0] * denominator
-            state.A_high = (rev[1] * denominator) + (denominator - 1)
-
-        elif opcode in (1, 4):
-            # reverse bxl, bxc
-            b_range = (state.B, state.B_high)
-            other_range = (operand, operand) if opcode == 1 else (state.C, state.C_high)
-            if (b_range[1] - b_range[0]) > (other_range[1] - other_range[0]):
-                # swap to have b_range as the smallest
-                b_range, other_range = other_range, b_range
-
-            new_range = [sys.maxsize, 0]
-
-            for b in range(b_range[0], b_range[1] + 1):
-                for other in range(other_range[0], other_range[1] + 1):
-                    if other & b == b:
-                        new_range[0] = min(new_range[0], other ^ b)
-                        break
-                for other in range(other_range[1], other_range[0] - 1, -1):
-                    if other & b == 0:
-                        new_range[1] = max(new_range[1], other ^ b)
-                        break
-
-            state.B, state.B_high = new_range
-
-        elif opcode == 2:
-            # bst, out
-            res = state.combo_op(operand) % 8
-            # if opcode == 2:
-            #     state.B = res
-            # else:
-            #     output.append(str(res))
-
-        elif opcode == 5:
-            # reverse out
-            res = expected_output.pop()
-            if operand < 4:
-                assert res == operand
-                continue
-
-            rev = state.combo_op(operand)
-            for x in range(rev[0], rev[1] + 1):
-                if x % 8 == res:
-                    if operand == 4:
-                        state.A = x
-                        state.A_high = x
-                    elif operand == 5:
-                        state.B = x
-                        state.B_high = x
-                    else:
-                        state.C = x
-                        state.C_high = x
-                    break
-            else:
-                assert False
-
-        elif opcode == 3:
-            # reverse jnz
-            state.A = max(state.A, 1)
-
-    return state
-
-
-# assert part2(get_state("sample2.txt", ProgramStateR)).A == 117440
-print(part2(get_state("input.txt", ProgramStateR)).A)
 print("All Done!")
