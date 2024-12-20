@@ -27,7 +27,7 @@ class Point2D:
 DIRECTIONS = [(-1, 0), (0, +1), (1, 0), (0, -1)]
 
 
-def part1(filename: str):
+def soln(filename: str, cheat_time: int = 2):
     data = read_data(filename)
     race_track = data.splitlines()
     m, n = len(race_track), len(race_track[0])
@@ -73,27 +73,23 @@ def part1(filename: str):
     cheats = defaultdict(int)
     point = end
     while point is not None:
-        for di, dj in DIRECTIONS:
-            if race_track[point.i + di][point.j + dj] != "#":
-                continue
-            wall_skip_point = Point2D(point.i + di * 2, point.j + dj * 2)
-            # if not (0 <= wall_skip_point.i < m) or not (0 <= wall_skip_point.j < n):
-            #     continue
-            # if race_track[wall_skip_point.i][wall_skip_point.j] == "#":
-            #     continue
-            if wall_skip_point not in min_dist:
-                # since every point has to be in min_dist for this racetrack
-                continue
-            time_saved = min_dist[wall_skip_point] - (min_dist[point] + 2)
-            if time_saved > 0:
-                cheats[min(time_saved, 100)] += 1
+        for di in range(-cheat_time, cheat_time + 1):
+            dj_range = cheat_time - abs(di)
+            for dj in range(-dj_range, dj_range + 1):
+                wall_skip_point = Point2D(point.i + di, point.j + dj)
+                if wall_skip_point not in min_dist:
+                    # since every point has to be in min_dist for this racetrack
+                    continue
+                time_saved = min_dist[wall_skip_point] - (min_dist[point] + abs(di) + abs(dj))
+                if time_saved > 0:
+                    cheats[min(time_saved, 100)] += 1
 
         point = prev_point[point]
 
     return cheats
 
 
-sample_cheats = part1("sample.txt")
+sample_cheats = soln("sample.txt")
 assert sample_cheats[2] == 14
 assert sample_cheats[4] == 14
 assert sample_cheats[6] == 2
@@ -106,4 +102,23 @@ assert sample_cheats[38] == 1
 assert sample_cheats[40] == 1
 assert sample_cheats[64] == 1
 
-print(part1("input.txt")[100])
+print("Part 1: ", soln("input.txt")[100])
+
+sample_cheats_2 = soln("sample.txt", cheat_time=20)
+assert sample_cheats_2[50] == 32
+assert sample_cheats_2[52] == 31
+assert sample_cheats_2[54] == 29
+assert sample_cheats_2[56] == 39
+assert sample_cheats_2[58] == 25
+assert sample_cheats_2[60] == 23
+assert sample_cheats_2[62] == 20
+assert sample_cheats_2[64] == 19
+assert sample_cheats_2[66] == 12
+assert sample_cheats_2[68] == 14
+assert sample_cheats_2[70] == 12
+assert sample_cheats_2[72] == 22
+assert sample_cheats_2[74] == 4
+assert sample_cheats_2[76] == 3
+
+
+print("Part 2: ", soln("input.txt", cheat_time=20)[100])
