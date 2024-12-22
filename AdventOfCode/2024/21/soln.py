@@ -107,49 +107,98 @@ def get_button_sequences(move_map: MoveMapType, code: str):
     return sequences
 
 
-from tqdm import tqdm, trange
-
-
 def get_sequence_lens(code: str, intermediate_robots=2):
     robot1_moves = get_button_sequences(numpad_move_map, code)
     optimal_lens = [min(len(m) for m in robot1_moves)]
     robot_moves = [m for m in robot1_moves if len(m) == optimal_lens[-1]]
 
-    for _ in trange(intermediate_robots, desc="Intermediate", leave=False):
-        next_robot_moves = []
-        for rm in tqdm(robot_moves, desc="Move", leave=False):
-            seqs = get_button_sequences(directional_move_map, rm)
-            next_robot_moves.extend(seqs)
-        optimal_lens.append(min(len(m) for m in next_robot_moves))
-        robot_moves = [m for m in next_robot_moves if len(m) == optimal_lens[-1]]
+    next_robot_moves = []
+    for rm in robot_moves:
+        seqs = get_button_sequences(directional_move_map, rm)
+        next_robot_moves.extend(seqs)
+    optimal_lens.append(min(len(m) for m in next_robot_moves))
+    robot_moves = [m for m in next_robot_moves if len(m) == optimal_lens[-1]]
+
+    next_robot_moves = []
+    for rm in robot_moves:
+        seqs = get_button_sequences(directional_move_map, rm)
+        next_robot_moves.extend(seqs)
+    optimal_lens.append(min(len(m) for m in next_robot_moves))
+    robot_moves = [m for m in next_robot_moves if len(m) == optimal_lens[-1]]
 
     return optimal_lens
 
 
-def get_code_complexity(code: str, intermediate_robots=2):
-    lens = get_sequence_lens(code, intermediate_robots)
+def get_code_complexity_p1(code: str):
+    lens = get_sequence_lens(code)
     return lens[-1] * int(code[:-1])
 
 
-l1_029A, l2_029A, l3_029A = get_sequence_lens("029A")
-assert l1_029A == len("<A^A>^^AvvvA")
-assert l2_029A == len("v<<A>>^A<A>AvA<^AA>A<vAAA>^A")
-assert l3_029A == len("<vA<AA>>^AvAA<^A>A<v<A>>^AvA^A<vA>^A<v<A>^A>AAvA^A<v<A>A>^AAAvA<^A>A")
-
-assert get_code_complexity("029A") == 68 * 29
-
-
-def soln(filename: str, intermediate_robots=2):
+def part1(filename: str):
     data = read_data(filename)
     complexity = 0
-    for code in tqdm(data.splitlines(), desc=filename + " Code"):
-        complexity += get_code_complexity(code, intermediate_robots)
+    for code in data.splitlines():
+        complexity += get_code_complexity_p1(code)
     return complexity
 
 
-assert soln("sample.txt") == 126384
-assert soln("input.txt") == 128962
+# print("Running Part 1")
+# l1_029A, l2_029A, l3_029A = get_sequence_lens("029A")
+# assert l1_029A == len("<A^A>^^AvvvA")
+# assert l2_029A == len("v<<A>>^A<A>AvA<^AA>A<vAAA>^A")
+# assert l3_029A == len("<vA<AA>>^AvAA<^A>A<v<A>>^AvA^A<vA>^A<v<A>^A>AAvA^A<v<A>A>^AAAvA<^A>A")
+# assert get_code_complexity_p1("029A") == 68 * 29
+# assert part1("sample.txt") == 126384
+# assert part1("input.txt") == 128962
 
-# print(soln("input.txt", 25))
+# Logic for part 2
+# 029A
+# A to 0 + A + 0 to 2 + A + 2 to 9 + A + 9 to A + A
+# A to 0 = "<A"
+# A to < + A + < to A + A
+# A to < = "v<<A"
+# A to v + A + A to < + A ....
+
+memo = {}
+
+
+def recurse(code: str, nest: int):
+    total_cost = 0
+    a = "A"
+    for b in code:
+        try:
+            if (a, b, nest) in memo:
+                continue
+            moves = directional_move_map[a][b]
+            if nest == 0:
+                cost = len(moves[0])
+            else:
+                cost = min(recurse(move, nest - 1) for move in moves)
+            memo[(a, b, nest)] = cost
+        finally:
+            total_cost += memo[(a, b, nest)]
+            a = b
+    return total_cost
+
+
+def get_code_complexity_p2(code: str, intermediate_robots):
+    directional_moves = get_button_sequences(numpad_move_map, code)
+    min_cost = min(recurse(dm, intermediate_robots - 1) for dm in directional_moves)
+    return min_cost * int(code[:-1])
+
+
+def part2(filename: str, intermediate_robots):
+    data = read_data(filename)
+    complexity = 0
+    for code in data.splitlines():
+        complexity += get_code_complexity_p2(code, intermediate_robots)
+    return complexity
+
+
+print("Running Part 2")
+
+assert part2("sample.txt", 2) == 126384
+assert part2("input.txt", 2) == 128962
+print(part2("input.txt", 25))
 
 print("All done!")
